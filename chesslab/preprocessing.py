@@ -32,9 +32,9 @@ def preprocess(
     print('Reading blocks')
     elo=np.zeros([blocks*block_size,2],np.int16)
     state=np.zeros([blocks*block_size,64],np.int8)
-    result=np.zeros([blocks*block_size,2],np.int8)
+    result=np.zeros([blocks*block_size,3],np.int8)
     game=np.zeros([blocks*block_size],np.int32)
-    for i in range(1,blocks+1):
+    for i in range(1,blocks):
         print(f'file: {i}')
         with open(f'{path}{start_name}_elo.{i}.pkl','rb') as infile:
             temp_data = pickle.load(infile)
@@ -49,8 +49,42 @@ def preprocess(
             temp_data = pickle.load(infile)
         game[(i-1)*block_size:i*block_size]=temp_data
 
+    i=blocks
+    print(f'file: {i}')
+
+    with open(f'{path}{start_name}_elo.{i}.pkl','rb') as infile:
+        temp_data = pickle.load(infile)
+    left=(i-1)*block_size+len(temp_data)
+    elo[(i-1)*block_size:left,:]=temp_data
+    with open(f'{path}{start_name}_state.{i}.pkl','rb') as infile:
+        temp_data = pickle.load(infile)
+    state[(i-1)*block_size:left,:]=temp_data
+    with open(f'{path}{start_name}_result.{i}.pkl','rb') as infile:
+        temp_data = pickle.load(infile)
+    result[(i-1)*block_size:left,:]=temp_data
+    with open(f'{path}{start_name}_game.{i}.pkl','rb') as infile:
+        temp_data = pickle.load(infile)
+    game[(i-1)*block_size:left]=temp_data
+    
+    elo=elo[:left,:]
+    state=state[:left,:]
+    result=result[:left,:]
+    game=game[:left]
+
 
     print('='*80)
+
+    if delete_draws:
+
+        #de los estados restantes, se eliminan aquellos que no tengan un claro ganador
+        print('deleting draws')
+        a=np.where(result[:,2]>0)
+        elo=np.delete(elo,a,0)
+        result=np.delete(result,a,0)
+        result=result[:,:2]
+        state=np.delete(state,a,0)
+        game=np.delete(game,a,0)
+        del a
 
     if elo_filter>0:
         print('Applying elo filter')
@@ -61,13 +95,14 @@ def preprocess(
         else: #filtering by elo min
             b=np.min(elo,1)
 
-        index_filter=np.where(b>min_elo)
-        len_dataset=len(index_filter[0])
+        index_filter=np.where(b<min_elo)
+        len_dataset=len(game)-len(index_filter[0])
         print(f'states with elo mean > {min_elo}: {len_dataset}')
 
-        state=state[index_filter]
-        result=result[index_filter]
-        game=game[index_filter]
+   
+        state=np.delete(state,index_filter,0)
+        result=np.delete(result,index_filter,0)
+        game=np.delete(game,index_filter,0)
 
         len_state=len(state)
         len_result=len(result)
@@ -88,9 +123,9 @@ def preprocess(
         e=np.where(d==-1)
         print(e[0].shape)
 
-        state=c2=np.delete(state,e,0)
-        result=c2=np.delete(result,e,0)
-        game=c2=np.delete(game,e,0)
+        state=np.delete(state,e,0)
+        result=np.delete(result,e,0)
+        game=np.delete(game,e,0)
 
         len_state=len(state)
         len_result=len(result)
@@ -135,8 +170,8 @@ def preprocess(
 
         len(np.unique(extracted_games)) #this is just to verify that all index numbers are unique
 
-        state=state[extracted_games]
-        result=result[extracted_games]
+        state=state[extracted_games,:]
+        result=result[extracted_games,:]
         game=game[extracted_games] #This variable is not longer needed
 
         len_state=len(state)
@@ -190,7 +225,8 @@ def preprocess(
     if delete_draws:
 
         #de los estados restantes, se eliminan aquellos que no tengan un claro ganador
-        print('deleting draws')
+        
+
         b=np.sum(result,axis=1)
         b=result/b[:,None]
         dif=np.abs(b[:,0]-b[:,1])

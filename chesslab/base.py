@@ -41,6 +41,37 @@ def order(x):
     return  {k: v for k, v in sorted(
         x.items(), key=lambda item: item[1], reverse=True)}
 
+import requests
+
+def download_file_from_google_drive(id, destination):
+    URL = "https://docs.google.com/uc?export=download"
+
+    session = requests.Session()
+
+    response = session.get(URL, params = { 'id' : id }, stream = True)
+    token = get_confirm_token(response)
+
+    if token:
+        params = { 'id' : id, 'confirm' : token }
+        response = session.get(URL, params = params, stream = True)
+
+    save_response_content(response, destination)    
+
+def get_confirm_token(response):
+    for key, value in response.cookies.items():
+        if key.startswith('download_warning'):
+            return value
+
+    return None
+
+def save_response_content(response, destination):
+    CHUNK_SIZE = 32768
+
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(CHUNK_SIZE):
+            if chunk: # filter out keep-alive new chunks
+                f.write(chunk)
+
 
 class default_parameters:
     #number of game states extracted per block in convertor
@@ -68,44 +99,43 @@ class default_parameters:
         'K':12,
     }
 
-
-
-
-    
-
-    np_encoding_1={
-        0:np.array([0,0,0],dtype=np.float),
-        1:np.array([0,0,1],dtype=np.float),
-        2:np.array([0,0,-1],dtype=np.float),
-        3:np.array([0,1,0],dtype=np.float),
-        4:np.array([0,-1,0],dtype=np.float),
-        5:np.array([1,0,0],dtype=np.float),
-        6:np.array([-1,0,0],dtype=np.float),
-        7:np.array([0,1,1],dtype=np.float),
-        8:np.array([0,-1,-1],dtype=np.float),
-        9:np.array([1,0,1],dtype=np.float),
-        10:np.array([-1,0,-1],dtype=np.float),
-        11:np.array([1,1,0],dtype=np.float),
-        12:np.array([-1,-1,0],dtype=np.float)
+    encoding_1={
+        '.':np.array([0,0,0],dtype=np.float),
+        'p':np.array([0,0,1],dtype=np.float),
+        'P':np.array([0,0,-1],dtype=np.float),
+        'b':np.array([0,1,0],dtype=np.float),
+        'B':np.array([0,-1,0],dtype=np.float),
+        'n':np.array([1,0,0],dtype=np.float),
+        'N':np.array([-1,0,0],dtype=np.float),
+        'r':np.array([0,1,1],dtype=np.float),
+        'R':np.array([0,-1,-1],dtype=np.float),
+        'q':np.array([1,0,1],dtype=np.float),
+        'Q':np.array([-1,0,-1],dtype=np.float),
+        'k':np.array([1,1,0],dtype=np.float),
+        'K':np.array([-1,-1,0],dtype=np.float)
     }
 
-    np_encoding_2={
-        0:np.array([0,0,0,0],dtype=np.float),
-        1:np.array([1,0,0,0],dtype=np.float),
-        2:np.array([0,0,0,1],dtype=np.float),
-        3:np.array([0,1,0,0],dtype=np.float),
-        4:np.array([0,0,1,0],dtype=np.float),
-        5:np.array([1,1,0,0],dtype=np.float),
-        6:np.array([0,0,1,1],dtype=np.float),
-        7:np.array([1,0,1,0],dtype=np.float),
-        8:np.array([0,1,0,1],dtype=np.float),
-        9:np.array([1,0,0,1],dtype=np.float),
-        10:np.array([0,1,1,0],dtype=np.float),
-        11:np.array([1,1,1,0],dtype=np.float),
-        12:np.array([0,1,1,1],dtype=np.float)
+    encoding_2={
+        '.':np.array([0,0,0,0],dtype=np.float),
+        'p':np.array([1,0,0,0],dtype=np.float),
+        'P':np.array([0,0,0,1],dtype=np.float),
+        'b':np.array([0,1,0,0],dtype=np.float),
+        'B':np.array([0,0,1,0],dtype=np.float),
+        'n':np.array([1,1,0,0],dtype=np.float),
+        'N':np.array([0,0,1,1],dtype=np.float),
+        'r':np.array([1,0,1,0],dtype=np.float),
+        'R':np.array([0,1,0,1],dtype=np.float),
+        'q':np.array([1,0,0,1],dtype=np.float),
+        'Q':np.array([0,1,1,0],dtype=np.float),
+        'k':np.array([1,1,1,0],dtype=np.float),
+        'K':np.array([0,1,1,1],dtype=np.float)
     }
 
-    
+def encode(board,inter_map=None):
+    if inter_map == None:
+        inter_map=default_parameters.inter_map
+    b=str(board).replace(' ','').replace('\n','')
+    return np.array([inter_map[i] for i in list(b)],dtype=np.int8)
 
 
     

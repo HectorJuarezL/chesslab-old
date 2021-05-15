@@ -18,7 +18,7 @@ def convert_games(source='',save_path='',start_name='chess',block_size=1000000,b
     game_nb=np.zeros([block_size],dtype=np.int32)
     turn_nb=np.zeros([block_size],dtype=np.int16)
     state=np.zeros([block_size,64],dtype=np.int8)
-    result=np.zeros([block_size,2],dtype=np.int8)
+    result=np.zeros([block_size,3],dtype=np.int8)
     elo=np.zeros([block_size,2],dtype=np.int16)
  
     pgn = open(source)
@@ -31,27 +31,33 @@ def convert_games(source='',save_path='',start_name='chess',block_size=1000000,b
     
     tic=Tic()
     while game: 
-        result_str = game.headers['Result']
-        nb+=1
-        j=0
         
-        if '1-0' in result_str or '0-1' in result_str:
-        
+
+        try:
+            temp_elo=[game.headers['WhiteElo'],game.headers['BlackElo']]
+
+            result_str = game.headers['Result']
+            nb+=1
+            j=0
             
+            #if '1-0' in result_str or '0-1' in result_str:
+            
+                
             sys.stdout.write(f'\r {cont} block reading: {100*i/block_size:.2f}%')
             sys.stdout.flush()
             board = game.board()
             moves=list(game.mainline_moves())
-            temp_elo=[game.headers['WhiteElo'],game.headers['BlackElo']]
             
             if '1-0' in result_str: #White wins
-                winner=[1,0]
+                winner=[1,0,0]
             elif '0-1' in result_str: #Black wins
-                winner=[0,1]
+                winner=[0,1,0]
+            else:
+                winner=[0,0,1]
             for v in moves:
                 board.push(v) 
                 b=str(board).replace(' ','').replace('\n','')
-                d=np.array([inter_map[i] for i in list(b)],dtype=np.uint8)
+                d=np.array([inter_map[i] for i in list(b)],dtype=np.int8)
 
                 state[i]=d
                 result[i]=winner
@@ -81,17 +87,18 @@ def convert_games(source='',save_path='',start_name='chess',block_size=1000000,b
                         pickle.dump(result, outfile, pickle.HIGHEST_PROTOCOL)
 
 
-                    sys.stdout.write(f'\r block reading: 100.00%')
+                    sys.stdout.write(f'\r {cont} block reading: 100.00%')
                     tic.toc()
                     if cont==blocks:
                         return
                     cont+=1
                     tic.tic()
+        except KeyError:
+            pass
 
             
         game = chess.pgn.read_game(pgn)
     
-    cont+=1
     
     game_nb=game_nb[:i]
     turn_nb=turn_nb[:i]
