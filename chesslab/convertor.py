@@ -5,10 +5,8 @@ import pickle
 import sys
 import numpy as np
 import argparse
-from chesslab.base import Tic
-from chesslab.base import default_parameters as params
 
-
+from .utils import Tic
 
 def convert_games(source='',save_path='',start_name='chess',block_size=1000000,blocks=0,inter_map=None):
     if source=='':
@@ -118,25 +116,4 @@ def convert_games(source='',save_path='',start_name='chess',block_size=1000000,b
         pickle.dump(result, outfile, pickle.HIGHEST_PROTOCOL)
 
         
-    tic.toc()
-
-
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
-                    help='Muestra los parámetros disponibles y un ejemplo de uso.')
-    parser.add_argument('--block_size', type=int, default=params.block_size, help="Tamaño del bloque de estados a guardar por archivo")
-    parser.add_argument('--blocks', type=int, default=0, help="Número total de bloques a extraer, 0=todos los que permita el archivo PGN")
-    parser.add_argument('--start_name', type=str, default=params.start_name, help="Tamaño de la muestra a usar.")
-    parser.add_argument('--source_file', type=str, default='', help="Archivo PGN a convertir")
-    parser.add_argument('--save_path', type=str, default='', help="Direccion donde se guardará la base preprocesada")
-
-    inter_map=params.inter_map
-
-    args = parser.parse_args()
-
-    tic=Tic()
-    process_games(source=args.source_file,save_path=args.save_path,start_name=args.start_name,block_size=start.block_size,inter_map=inter_map)
     tic.toc()

@@ -1,6 +1,6 @@
 import pickle
 import numpy as np
-from chesslab.base import default_parameters as params
+from .utils import default_parameters as params
 
 import argparse
 
@@ -19,7 +19,9 @@ def preprocess(
     nb_game_filter=0, #0 no aplica el filtro
     delete_eaten=True,
     delete_duplicate=True,
-    delete_draws=True):
+    delete_draws=True,
+    delete_both_winners=True,
+    balance_data = False):
 
     if blocks==0:
         print('specify the number of files to preprocess')
@@ -84,6 +86,9 @@ def preprocess(
         result=result[:,:2]
         state=np.delete(state,a,0)
         game=np.delete(game,a,0)
+        len_state=len(state)
+        print(f'total of different states: {len_state}')
+        print(f'total of different result: {result.shape}')
         del a
 
     if elo_filter>0:
@@ -95,7 +100,7 @@ def preprocess(
         else: #filtering by elo min
             b=np.min(elo,1)
 
-        index_filter=np.where(b<min_elo)
+        index_filter=np.where(b<=min_elo)
         len_dataset=len(game)-len(index_filter[0])
         print(f'states with elo mean > {min_elo}: {len_dataset}')
 
@@ -112,6 +117,8 @@ def preprocess(
         print(f'total of different result: {len_result}')
         print(f'total of games: {len_game}')
         print('='*80)
+
+
 
     if delete_eaten:
         #en este bloque se eliminan aquellos estados que su estado siguiente sea comer una pieza, esto es porque muchos de estos estados conllevan el comer una pieza posterior
@@ -147,23 +154,24 @@ def preprocess(
 
         print(f'total of different games: {unique_games}')
 
-        extracted_games=np.zeros([unique_games*nb_game_filter],dtype=np.int32)
+        extracted_games=np.zeros([unique_games*nb_game_filter],dtype=np.int32) #guarda los indices de los juegos a extraer
         last_game=game[0]
-        index_inf=0
+        index_low=0
         cont=0
         cont_aux=0
         for i,g in enumerate(game):
             if g != last_game:
                 if cont>max_games:
-                    extracted_games[cont_aux:cont_aux+nb_game_filter]=index_inf+np.random.permutation(cont-min_games)[:nb_game_filter]+min_games #this will get only nb_game_filter values from total per game
+                    #extracted_games[cont_aux:cont_aux+nb_game_filter]=index_low+np.random.permutation((cont-min_games)//2)[:nb_game_filter]*2+min_games #this will get only nb_game_filter values from total per game
+                    extracted_games[cont_aux:cont_aux+nb_game_filter]=index_low+np.arange(nb_game_filter)+min_games+np.random.randint(cont-min_games)
                     cont_aux+=nb_game_filter
                 else:    
                     print(f'The game {g} has fewer turns than espected {cont}:{max_games}')
                 last_game=g
-                index_inf=i
+                index_low=i
                 cont=0
             cont+=1
-        extracted_games[cont_aux:cont_aux+nb_game_filter]=index_inf+np.random.permutation((len(game)-index_inf-min_games))[:nb_game_filter]+min_games
+        extracted_games[cont_aux:cont_aux+nb_game_filter]=index_low+np.random.permutation((len(game)-index_low-min_games)//2)[:nb_game_filter]*2+min_games
                 
 
         extracted_games[-100:]
@@ -222,7 +230,7 @@ def preprocess(
         print(f'total of different result: {len_result}')
         print('='*80)
 
-    if delete_draws:
+    if delete_both_winners:
 
         #de los estados restantes, se eliminan aquellos que no tengan un claro ganador
         
@@ -230,7 +238,7 @@ def preprocess(
         b=np.sum(result,axis=1)
         b=result/b[:,None]
         dif=np.abs(b[:,0]-b[:,1])
-        a=np.where(dif<0.99)
+        a=np.where(dif<1)
 
         len(a[0])
 
@@ -246,17 +254,49 @@ def preprocess(
             
         len_state=len(state)
         len_result=len(result)
-        print('draws deleted')
+        print('delete both winners')
+        print(f'total of different states: {len_state}')
+        print(f'total of different result: {len_result}')
+        print('='*80)
+    if balance_data:
+        white_index=np.where(result[:,0]==1)
+        white_index = np.random.permutation(white_index[0])
+        white_states=state[white_index,:]
+        white_results=result[white_index,:]
+        del white_index
+
+        black_index=np.where(result[:,1]==1)
+        black_index = np.random.permutation(black_index[0])
+        black_states=state[black_index,:]
+        black_results=result[black_index,:]
+        del black_index
+
+        max_len=min(len(white_results),len(black_results))
+
+        result = np.concatenate((white_results[:max_len,:],black_results[:max_len,:]))
+        del white_results
+        del black_results
+
+        state = np.concatenate((white_states[:max_len,:],black_states[:max_len,:]))
+        del white_states
+        del black_states
+
+        len_state=len(state)
+        len_result=len(result)
+        print('data balanced')
         print(f'total of different states: {len_state}')
         print(f'total of different result: {len_result}')
         print('='*80)
 
 
+
     #se guardan los estados junto con sus etiquetas de ganador
-
-    black_wins=np.count_nonzero(result[:,0]==0)
-
+    
     white_wins=np.count_nonzero(result[:,0]==1)
+    black_wins=np.count_nonzero(result[:,1]==1)
+    
+    print("white_wins: {}".format(white_wins))
+    print("black_wins: {}".format(black_wins))
 
     if black_wins>white_wins:
         print(f'IB={black_wins/white_wins}')
@@ -276,35 +316,3 @@ def preprocess(
 
 
 
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
-                    help='Muestra los parámetros disponibles y un ejemplo de uso.')
-    parser.add_argument('--block_size', type=int, default= params.block_size, help="Tamaño del bloque de estados a guardar por archivo")
-    parser.add_argument('--blocks', type=int, default=0, help="Número de bloques a leer (número de archivos por cada tipo leer)")
-    parser.add_argument('--x_name', type=str, default='ccrl_states', help="Nombre del archivo con los estados de juego a guardar")
-    parser.add_argument('--y_name', type=str, default='ccrl_results', help="Nombre del archivo con los resultados del ganador")
-    parser.add_argument('--start_name', type=str, default= 'chess', help="Nombre de inicio de los archivos (nombre utilizado en convertor).")
-    parser.add_argument('--elo_filter', type=int, default=1, help="Tipo de filtrado de elo, 0=Sin filtro, 1=Filtrar por elo promedio, 2=Filtrar por elo minimo")
-    parser.add_argument('--min_elo', type=int, default=3000, help="Si se especifica un tipo de filtro de elo, este valor indica el minimo del filtro")
-    parser.add_argument('--nb_game_filter', type=int, default=0, help="Número de juegos a extraer por cada partida, 0=Extraer todos.")
-    parser.add_argument('--delete_duplicate', default=False, action='store_true',help='Elimina los estados de juego duplicados')
-    parser.add_argument('--delete_draws', default=False, action='store_true', help='Elimina aquellas partidas que no tengan un claro ganador')
-    parser.add_argument('--path_files', type=str, default='', help="ruta donde se encuentran todos los archivos")
-
-    args = parser.parse_args()
-
-    preprocess(
-        block_size=args.block_size,
-        blocks=args.blocks,
-        path=args.path_files,
-        start_name=args.start_name,
-        min_elo=args.min_elo,
-        x_name=args.x_name,
-        y_name=args.y_name,
-        elo_filter=args.elo_filter,
-        nb_game_filter=args.nb_game_filter, #0 no aplica el filtro
-        delete_duplicate=args.delete_duplicate,
-        delete_draws=args.delete_draws)

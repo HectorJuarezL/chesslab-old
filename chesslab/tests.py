@@ -1,28 +1,50 @@
-from chesslab import agent
+from .utils import join_and_sort
+import numpy as np
 import chess
 
-def kaufman_test(agent,return_lists=False):
-    board = chess.Board()
+def kaufman_test(agent,details=0):
     acc=0
-    listboards=[]
-    listmsg=[]
-    
+    if details>0:
+        data=[]
+        if details==2:
+            boards=[]
+    print("Kaufman test ")
     for i,s in kaufman_states.items():
-        y=board.set_epd(s)
+        print(i)
+        board,y = chess.Board.from_epd(s)
+        #y=board.set_epd(s)
         bm=list(y.values())[0][0]
-        move=agent.select_move(board)
-        msg=f'move predicted / best move: {move} / {bm}'
-        listboards.append(board.copy())
-        listmsg.append(msg)
-        if move == bm:
-            acc+=1
+        if details==0:
+            move=agent.select_move(board)
+            if move == bm:
+                acc+=1
+        elif details==1 or details==2:
+            moves,values=agent.get_move_values(board)
+            sort=join_and_sort(moves,values)
+            bm_predicted=sort[0,0]
+            value_predicted=sort[0,1]
+            rank=np.where(sort[:,0]==bm)[0][0]
+            value_bm=sort[rank,1]
+            weight=1-rank/(len(moves)-1)
+            tmp=[bm,value_bm,bm_predicted,value_predicted,rank+1,len(moves),weight]
+            data.append(tmp)
+            if details==2:
+                boards.append(board.copy(stack=False))
+            if bm_predicted == bm:
+                acc+=1
+        else:
+            print("detail not valid")
+            
+        
     acc/=25
-    if return_lists:
-        return acc,listmsg,listboards
+    
+    if details==1:
+        return acc,data
+    elif details==2:
+        return acc,boards,data
     else:
         return acc
 
-    #create_csv('results_1.csv',data,headers=['model_nb','train','test','kaufman predicts','percent'])
 
 kaufman_states={
     1:"1rbq1rk1/p1b1nppp/1p2p3/8/1B1pN3/P2B4/1P3PPP/2RQ1R1K w - - bm Nf6+",
