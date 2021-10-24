@@ -1,6 +1,6 @@
 import pickle
 import numpy as np
-from .utils import default_parameters as params
+from .utils import params
 
 import argparse
 

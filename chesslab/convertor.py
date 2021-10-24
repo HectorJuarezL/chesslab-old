@@ -37,9 +37,6 @@ def convert_games(source='',save_path='',start_name='chess',block_size=1000000,b
             result_str = game.headers['Result']
             nb+=1
             j=0
-            
-            #if '1-0' in result_str or '0-1' in result_str:
-            
                 
             sys.stdout.write(f'\r {cont} block reading: {100*i/block_size:.2f}%')
             sys.stdout.flush()
