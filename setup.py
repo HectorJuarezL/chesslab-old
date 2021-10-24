@@ -13,13 +13,13 @@ setup(
   install_requires=[            # I get to this in a second
           'chess',
           'numpy',
+          'py7zr'
       ],
   extras_require = {
-        "full" :["tensorflow","torch","py7zr"],
+        "full" :["tensorflow","torch"],
         "tf":  ["tensorflow"],
         "torch": ["torch"],
-        ":python_version<'3.8'": ["pickle5"],
-        "7z":["py7zr"]
+        ":python_version<'3.8'": ["pickle5"]
     },
   classifiers=[
     'Development Status :: 4 - Beta',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package
