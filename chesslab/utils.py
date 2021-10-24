@@ -1,6 +1,7 @@
 import time
 import numpy as np
 import sys
+import os
 
 version = sys.version
 version = int(version[0]+version[2])
@@ -18,7 +19,11 @@ def isnotebook():
         elif shell == 'TerminalInteractiveShell':
             return False  # Terminal running IPython
         else:
-            return False  # Other type (?)
+            try:
+                import google.colab
+                return True
+            except:
+                return False # Other type (?)
     except NameError:
         return False      # Probably standard Python interpreter
 
@@ -50,6 +55,9 @@ def load_pkl(filename):
         return pickle.load(infile)
 
 def save_pkl(data,filename):
+    folder = os.path.dirname(os.path.abspath(filename))
+    if not os.path.exists(folder):
+        os.makedirs(folder)
     with open(filename, 'wb') as pfile:
         pickle.dump(data, pfile, protocol=pickle.HIGHEST_PROTOCOL)
 
