@@ -135,11 +135,11 @@ def save_model(model,history,encoding,epoch,name):
         
 def load_model(model,name,training=False):
     (model.hw,model.hb,history,encoding,epoch)=load_pkl(name)
-    model.trainable_variables = []
-    for i in range(len(model.hw)):
-        model.trainable_variables.append(model.hw[i])    
-        model.trainable_variables.append(model.hb[i])
     if training:
+        model.trainable_variables = []
+        for i in range(len(model.hw)):
+            model.trainable_variables.append(model.hw[i])    
+            model.trainable_variables.append(model.hb[i])
         return encoding,history,epoch
     else:
         return encoding,history

@@ -2,6 +2,7 @@ import datetime as dt
 import time
 import numpy as np
 import torch
+import os
 
 from .utils import params,Print_r
 
@@ -44,6 +45,10 @@ def fitting(start=0,
 
     start+=1
     NUM_EPOCHS = start+epochs
+
+    folder = os.path.dirname(os.path.abspath(save_name))
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
     percent_train = len_train_loader//1000
     percent_test = len_test_loader//1000

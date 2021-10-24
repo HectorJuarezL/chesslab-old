@@ -22,6 +22,8 @@ __pycache__/
 *.7z
 *.dot
 
+examples/backups/*
+
 # Distribution / packaging
 .Python
 build/

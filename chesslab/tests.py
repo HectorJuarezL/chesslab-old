@@ -2,16 +2,18 @@ from .utils import join_and_sort
 import numpy as np
 import chess
 
-def kaufman_test(agent,details=0):
+def kaufman_test(agent,details=0,verbose=0):
     acc=0
     acc_w=0
     if details>0:
         data=[]
         if details==2:
             boards=[]
-    print("Kaufman test ")
+    if verbose>0:
+        print("Kaufman test ")
     for i,s in kaufman_states.items():
-        print(i)
+        if verbose>0:
+            print(i)
         board,y = chess.Board.from_epd(s)
         #y=board.set_epd(s)
         bm=list(y.values())[0][0]
