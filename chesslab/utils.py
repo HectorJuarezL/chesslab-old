@@ -67,6 +67,7 @@ def join_and_sort(moves,values):
     return np.concatenate((moves,values),axis=1)
 
 def download_file_from_google_drive(id, destination):
+    import requests
     URL = "https://docs.google.com/uc?export=download"
 
     session = requests.Session()
