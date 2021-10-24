@@ -23,7 +23,8 @@ def fitting(start=0,
             load_name=None,
             shuffle_train=True,
             shuffle_test=False,
-            num_workers=0):
+            num_workers=0,
+            download_models=False):
 
 
     
@@ -121,6 +122,10 @@ def fitting(start=0,
             'lr':lr,
             'encoding':encoding
             }, name)
+
+        if download_models:
+            from google.colab import files
+            files.download(name)
 
         if test_loader is not None:
             print('Epoch: {:02}/{:02} | time: {:.0f}s = {:.1f}m | train loss: {:.4f} | train acc: {:.4f} | test loss: {:.4f} | test acc: {:.4f}'

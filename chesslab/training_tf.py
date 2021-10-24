@@ -46,7 +46,8 @@ def fitting(start=0,
             encoding=None,
             load_name = None,
             shuffle_train=True,
-            shuffle_test=False):
+            shuffle_test=False,
+            download_models=False):
 
     history={'train':{'acc':[],'loss':[]}, 'test':{'acc':[],'loss':[]} }
 
@@ -101,6 +102,10 @@ def fitting(start=0,
         elapsed_time = time.time() - start_time
         name="{}.{}.h5".format(save_name,epoch)
         save_model(model=model,history=history,encoding=encoding,epoch=epoch,name=name)
+
+        if download_models:
+            from google.colab import files
+            files.download(name)
 
         if test_loader is not None:
             print('Epoch: {:02}/{:02} | time: {:.0f}s = {:.1f}m | train loss: {:.4f} | train acc: {:.4f} | test loss: {:.4f} | test acc: {:.4f}'
