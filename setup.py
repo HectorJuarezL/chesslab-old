@@ -29,3 +29,7 @@ setup(
     'Programming Language :: Python :: 3.9',      #Specify which pyhton versions that you want to support
   ],
 )
+
+#pip install twine
+#python setup.py sdist
+#twine upload dist/*
