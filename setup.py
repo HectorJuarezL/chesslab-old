@@ -8,7 +8,7 @@ setup(
   author = 'Hector Juarez',                   # Type in your name
   author_email = 'hjuarezl1400@alumno.ipn.mx',      # Type in your E-Mail
   url = 'https://github.com/yniad/chesslab',   # Provide either the link to your github or to your website
-  download_url = 'https://github.com/yniad/chesslab/archive/refs/tags/0.5.tar.gz',    # I explain this later on
+  download_url = 'https://github.com/yniad/chesslab/archive/refs/tags/1.0.tar.gz',
   keywords = ['chess', 'chesslab', 'evaluation function','agent'],   # Keywords that define your package best
   install_requires=[            # I get to this in a second
           'chess',
