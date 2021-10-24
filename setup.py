@@ -9,16 +9,17 @@ setup(
   author_email = 'hjuarezl1400@alumno.ipn.mx',      # Type in your E-Mail
   url = 'https://github.com/yniad/chesslab',   # Provide either the link to your github or to your website
   download_url = 'https://github.com/yniad/chesslab/archive/refs/tags/1.0.tar.gz',
-  keywords = ['chess', 'chesslab', 'evaluation function','agent'],   # Keywords that define your package best
+  keywords = ['chess', 'chesslab', 'evaluation function','agent','engine'],   # Keywords that define your package best
   install_requires=[            # I get to this in a second
           'chess',
           'numpy',
       ],
   extras_require = {
-        'full' :["tensorflow","torch","py7zr"]
-        'tf':  ["tensorflow"],
-        'torch': ["torch"]
-        '7z':["py7zr"]
+        "full" :["tensorflow","torch","py7zr"]
+        "tf":  ["tensorflow"],
+        "torch": ["torch"],
+        ":python_version<'3.8'": ["pickle5"]
+        "7z":["py7zr"]
     }
   classifiers=[
     'Development Status :: 4 - Beta',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package
