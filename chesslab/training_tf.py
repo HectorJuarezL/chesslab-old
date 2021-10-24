@@ -3,7 +3,7 @@ import time
 import numpy as np
 import tensorflow as tf
 
-from .utils import load_pkl,save_pkl,params,print_r
+from .utils import load_pkl,save_pkl,params,Print_r
 
 
 train_loss = tf.keras.metrics.Mean(name='train_loss')
@@ -78,6 +78,7 @@ def fitting(start=0,
 
     for epoch in range(start,NUM_EPOCHS):
         start_time=time.time()
+        print_r = Print_r() #new pretty line
         
         for i,(batch_x, batch_y) in enumerate(train_loader):
             train_step(model,batch_x,batch_y,optimizer,loss_fn)
@@ -108,10 +109,10 @@ def fitting(start=0,
             files.download(name)
 
         if test_loader is not None:
-            print('Epoch: {:02}/{:02} | time: {:.0f}s = {:.1f}m | train loss: {:.4f} | train acc: {:.4f} | test loss: {:.4f} | test acc: {:.4f}'
+            print_r('Epoch: {:02}/{:02} | time: {:.0f}s = {:.1f}m | train loss: {:.4f} | train acc: {:.4f} | test loss: {:.4f} | test acc: {:.4f}'
                 .format(epoch,NUM_EPOCHS-1,elapsed_time,elapsed_time/60,train_loss.result(),train_accuracy.result(),test_loss.result(),test_accuracy.result()))
         else:
-            print('Epoch: {:02}/{:02} | time: {:.0f}s = {:.1f}m | train loss: {:.4f} | train acc: {:.4f}'
+            print_r('Epoch: {:02}/{:02} | time: {:.0f}s = {:.1f}m | train loss: {:.4f} | train acc: {:.4f}'
                 .format(epoch,NUM_EPOCHS-1,elapsed_time,elapsed_time/60,train_loss.result(),train_accuracy.result()))
 
 

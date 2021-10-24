@@ -10,13 +10,39 @@ else:
     import pickle
 
 
-def print_r(text=None):
-    if text is None:
-        sys.stdout.write('\r')
-        sys.stdout.flush()
-        return
-    sys.stdout.write('{}           \r'.format(text))
-    sys.stdout.flush()
+def isnotebook():
+    try:
+        shell = get_ipython().__class__.__name__
+        if shell == 'ZMQInteractiveShell':
+            return True   # Jupyter notebook or qtconsole
+        elif shell == 'TerminalInteractiveShell':
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+    except NameError:
+        return False      # Probably standard Python interpreter
+
+
+is_notebook = isnotebook()
+if is_notebook:
+    import IPython
+
+class Print_r:
+    def __init__(self,):
+        if is_notebook:
+            self.out = display(IPython.display.Pretty(''), display_id=True)
+    def __call__(self,text):
+        if is_notebook:
+            self.out.update(IPython.display.Pretty(text))
+        else:
+            print('{}           \r'.format(text))
+
+
+#def print_r(text="",new=False):
+#    if is_notebook:
+#    else:
+#        print('{}           \r'.format(text))
+#        #sys.stdout.write('{}           \r'.format(text))
 
 
 def load_pkl(filename):

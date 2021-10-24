@@ -3,7 +3,7 @@ import time
 import numpy as np
 import torch
 
-from .utils import params,print_r
+from .utils import params,Print_r
 
 def fitting(start=0,
             epochs=1,
@@ -54,6 +54,7 @@ def fitting(start=0,
         
         start_time = time.time()
 
+        print_r = Print_r()
         model.train()
         loss_sum = 0
         acc_sum = 0
@@ -128,10 +129,10 @@ def fitting(start=0,
             files.download(name)
 
         if test_loader is not None:
-            print('Epoch: {:02}/{:02} | time: {:.0f}s = {:.1f}m | train loss: {:.4f} | train acc: {:.4f} | test loss: {:.4f} | test acc: {:.4f}'
+            print_r('Epoch: {:02}/{:02} | time: {:.0f}s = {:.1f}m | train loss: {:.4f} | train acc: {:.4f} | test loss: {:.4f} | test acc: {:.4f}'
                 .format(epoch,NUM_EPOCHS-1,elapsed_time,elapsed_time/60,epoch_train_loss,epoch_train_acc,epoch_test_loss,epoch_test_acc))
         else:
-            print('Epoch: {:02}/{:02} | time: {:.0f}s = {:.1f}m | train loss: {:.4f} | train acc: {:.4f}'
+            print_r('Epoch: {:02}/{:02} | time: {:.0f}s = {:.1f}m | train loss: {:.4f} | train acc: {:.4f}'
                 .format(epoch,NUM_EPOCHS-1,elapsed_time,elapsed_time/60,epoch_train_loss,epoch_train_acc))
 
 def encode(board,encoding):
