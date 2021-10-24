@@ -7,20 +7,20 @@ __pycache__/
 *.so
 
 #pickle files
-.pkl
+*.pkl
 
 #Models trained
-.h5
-.pt
+*.h5
+*.pt
 
 #other stuff
-.pgn
-.png
-.jpg
-.jpeg
-.zip
-.7z
-.dot
+*.pgn
+*.png
+*.jpg
+*.jpeg
+*.zip
+*.7z
+*.dot
 
 # Distribution / packaging
 .Python
