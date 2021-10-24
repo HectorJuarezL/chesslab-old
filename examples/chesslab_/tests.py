@@ -4,6 +4,7 @@ import chess
 
 def kaufman_test(agent,details=0):
     acc=0
+    acc_w=0
     if details>0:
         data=[]
         if details==2:
@@ -27,6 +28,7 @@ def kaufman_test(agent,details=0):
             value_bm=sort[rank,1]
             weight=1-rank/(len(moves)-1)
             tmp=[bm,value_bm,bm_predicted,value_predicted,rank+1,len(moves),weight]
+            acc_w+=weight
             data.append(tmp)
             if details==2:
                 boards.append(board.copy(stack=False))
@@ -37,11 +39,12 @@ def kaufman_test(agent,details=0):
             
         
     acc/=25
+    acc_w/=25
     
     if details==1:
-        return acc,data
+        return acc,acc_w,data
     elif details==2:
-        return acc,boards,data
+        return acc,acc_w,boards,data
     else:
         return acc
 

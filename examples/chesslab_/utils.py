@@ -1,32 +1,31 @@
 import time
 import numpy as np
-import pickle
-import chess
-from operator import itemgetter
+import sys
+
+version = sys.version
+version = int(version[0]+version[2])
+if version<=37:
+    import pickle5 as pickle
+else:
+    import pickle
 
 
-
-class Tic:
-    def __init__(self,type='minutes'):
-        self.start=time.time()
-        if type== 'minutes':
-            self.type=1
-        else:
-            self.type=0
-    def tic(self):
-        self.start=time.time()
-    def toc(self):
-        if type==0:
-            print('\nProcess finished - Elapsed time: {:.2f}s\n'.format(time.time()-self.start))
-        else:
-            print('\nProcess finished - Elapsed time: {:.2f}m\n'.format((time.time()-self.start)/60))
-
-
+def print_r(text=None):
+    if text is None:
+        sys.stdout.write('\r')
+        sys.stdout.flush()
+        return
+    sys.stdout.write('{}           \r'.format(text))
+    sys.stdout.flush()
 
 
 def load_pkl(filename):
     with open(filename, 'rb') as infile:
         return pickle.load(infile)
+
+def save_pkl(filename,data):
+    with open(filename, 'wb') as pfile:
+        pickle.dump(data, pfile, protocol=pickle.HIGHEST_PROTOCOL)
 
 def create_csv(name,data,headers=None):
     file = open(name,'w',encoding='utf8')
@@ -40,9 +39,8 @@ def create_csv(name,data,headers=None):
     file.write(text[:-1])
 
 #funcion para ordenar un diccionario por su valor de mayor a menor
-def order(x,reverse=True):
-    #return  {k: v for k, v in sorted(
-    #    x.items(), key=lambda item: item[1], reverse = True)}
+def order_dict(x,reverse=True):
+    from operator import itemgetter
     return  {k: v for k, v in sorted(
         x.items(), key=itemgetter(1), reverse = reverse)}
 
@@ -54,11 +52,15 @@ def get_max_row(x,col=None):
     return max(x,key=itemgetter(col))
 
 def join_and_sort(moves,values):
-    index=np.argsort(1-values)# the values are between 0 and 1, 1-values helps to get inverse sort
+    index = np.random.permutation(len(values)) #random permutation so same values can be sorted different
+    values=values[index]
+    moves=np.array(moves)
+    moves=moves[index]
+
+    index=np.argsort(max(values)-values)# the values are between 0 and 1, max(values)-values helps to get inverse sort
     #index=np.argsort(values)[::-1]
 
     values=values[index]
-    moves=np.array(moves)
     moves=moves[index]
     values=np.expand_dims(values,axis=1)
     moves=np.expand_dims(moves,axis=1)
@@ -93,8 +95,16 @@ def save_response_content(response, destination):
             if chunk: # filter out keep-alive new chunks
                 f.write(chunk)
 
+def download_7z(file_id,destination="./tmp/"):
+    destination = './temp.7z'
+    download_file_from_google_drive(file_id, destination)
+    import py7zr
+    archive = py7zr.SevenZipFile('temp.7z', mode='r')
+    archive.extractall(path=destination)
+    archive.close()
 
-class default_parameters:
+
+class params:
     #number of game states extracted per block in convertor
     block_size=1000000
     batch_size=128
@@ -121,19 +131,19 @@ class default_parameters:
     }
 
     encoding_1={
-        '.':np.array([0,0,0],dtype=np.float),
-        'p':np.array([0,0,1],dtype=np.float),
-        'P':np.array([0,0,-1],dtype=np.float),
-        'b':np.array([0,1,0],dtype=np.float),
-        'B':np.array([0,-1,0],dtype=np.float),
-        'n':np.array([1,0,0],dtype=np.float),
-        'N':np.array([-1,0,0],dtype=np.float),
-        'r':np.array([0,1,1],dtype=np.float),
-        'R':np.array([0,-1,-1],dtype=np.float),
-        'q':np.array([1,0,1],dtype=np.float),
-        'Q':np.array([-1,0,-1],dtype=np.float),
-        'k':np.array([1,1,0],dtype=np.float),
-        'K':np.array([-1,-1,0],dtype=np.float)
+        '.':np.array([ 0, 0, 0],dtype=np.float),
+        'p':np.array([ 0, 0, 1],dtype=np.float),
+        'P':np.array([ 0, 0,-1],dtype=np.float),
+        'b':np.array([ 0, 1, 0],dtype=np.float),
+        'B':np.array([ 0,-1, 0],dtype=np.float),
+        'n':np.array([ 1, 0, 0],dtype=np.float),
+        'N':np.array([-1, 0, 0],dtype=np.float),
+        'r':np.array([ 0, 1, 1],dtype=np.float),
+        'R':np.array([ 0,-1,-1],dtype=np.float),
+        'q':np.array([ 1, 0, 1],dtype=np.float),
+        'Q':np.array([-1, 0,-1],dtype=np.float),
+        'k':np.array([ 1, 1, 0],dtype=np.float),
+        'K':np.array([-1,-1, 0],dtype=np.float)
     }
 
     encoding_2={
@@ -154,7 +164,7 @@ class default_parameters:
 
 def encode(board,inter_map=None):
     if inter_map == None:
-        inter_map=default_parameters.inter_map
+        inter_map=params.inter_map
     b=str(board).replace(' ','').replace('\n','')
     return np.array([inter_map[i] for i in list(b)],dtype=np.int8)
 
