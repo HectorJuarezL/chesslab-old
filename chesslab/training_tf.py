@@ -56,7 +56,7 @@ def fitting(start=0,
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 
     if load_name is not None:
-        encoding,history,start = load_model(load_name,model,training=True)
+        encoding,history,start = load_model(model,load_name,training=True)
 
     
     train_loader=data_loader( x_data = x_train,y_data=y_train,batch_size=batch_size,shuffle=True ,encoding = encoding )
@@ -100,7 +100,7 @@ def fitting(start=0,
 
         elapsed_time = time.time() - start_time
         name="{}.{}.h5".format(save_name,epoch)
-        save_model(name,model,history,encoding,epoch)
+        save_model(model=model,history=history,encoding=encoding,epoch=epoch,name=name)
 
         if test_loader is not None:
             print('Epoch: {:02}/{:02} | time: {:.0f}s = {:.1f}m | train loss: {:.4f} | train acc: {:.4f} | test loss: {:.4f} | test acc: {:.4f}'
@@ -124,10 +124,10 @@ def encode(board,encoding):
             a[i,j,:]=encoding[val]
     return a
 
-def save_model(name,model,history,encoding,epoch):
-    save_pkl(name,(model.hw,model.hb,history,encoding,epoch))
+def save_model(model,history,encoding,epoch,name):
+    save_pkl((model.hw,model.hb,history,encoding,epoch),name)
         
-def load_model(name,model,training=False):
+def load_model(model,name,training=False):
     (model.hw,model.hb,history,encoding,epoch)=load_pkl(name)
     model.trainable_variables = []
     for i in range(len(model.hw)):

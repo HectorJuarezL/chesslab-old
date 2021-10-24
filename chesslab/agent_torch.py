@@ -6,9 +6,9 @@ from .training_torch import load_model,encode
 
 class agent():
 
-    def __init__(self,path_model,model):
+    def __init__(self,model,path_model):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model,self.encoding,self.history=load_model(path_model,model)
+        self.model,self.encoding,self.history=load_model(model,path_model)
         self.model.to(self.device)
         self.model.eval()
         self.channels=len(self.encoding['.'])

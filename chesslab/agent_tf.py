@@ -6,9 +6,9 @@ from .training_tf import load_model,encode
 
 class agent():
 
-    def __init__(self,path_model,model):
+    def __init__(self,model,path_model):
 
-        self.encoding,self.history=load_model(path_model,model)
+        self.encoding,self.history=load_model(model,path_model)
         self.model=model
         self.channels=len(self.encoding['.'])
         

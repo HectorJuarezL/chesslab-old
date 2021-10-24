@@ -23,7 +23,7 @@ def load_pkl(filename):
     with open(filename, 'rb') as infile:
         return pickle.load(infile)
 
-def save_pkl(filename,data):
+def save_pkl(data,filename):
     with open(filename, 'wb') as pfile:
         pickle.dump(data, pfile, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -97,9 +97,9 @@ def save_response_content(response, destination):
                 f.write(chunk)
 
 def download_7z(file_id,destination="./tmp/"):
+    import py7zr
     tmp_name = 'temp.7z'
     download_file_from_google_drive(file_id, tmp_name)
-    import py7zr
     archive = py7zr.SevenZipFile(tmp_name, mode='r')
     archive.extractall(path=destination)
     archive.close()
