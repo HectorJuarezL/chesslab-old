@@ -97,10 +97,10 @@ def save_response_content(response, destination):
                 f.write(chunk)
 
 def download_7z(file_id,destination="./tmp/"):
-    destination = './temp.7z'
-    download_file_from_google_drive(file_id, destination)
+    tmp_name = 'temp.7z'
+    download_file_from_google_drive(file_id, tmp_name)
     import py7zr
-    archive = py7zr.SevenZipFile('temp.7z', mode='r')
+    archive = py7zr.SevenZipFile(tmp_name, mode='r')
     archive.extractall(path=destination)
     archive.close()
 
