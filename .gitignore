@@ -6,6 +6,22 @@ __pycache__/
 # C extensions
 *.so
 
+#pickle files
+.pkl
+
+#Models trained
+.h5
+.pt
+
+#other stuff
+.pgn
+.png
+.jpg
+.jpeg
+.zip
+.7z
+.dot
+
 # Distribution / packaging
 .Python
 build/
