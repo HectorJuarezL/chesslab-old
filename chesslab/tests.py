@@ -1,6 +1,37 @@
-from .utils import join_and_sort
+from .utils import join_and_sort,Print_r
 import numpy as np
 import chess
+
+
+def versus(agent_white=None,agent_black=None,n_counts=100):
+    white_wins=0
+    black_wins=0
+    draws =0
+    print_r = Print_r()
+    percent = n_counts//100
+    for i in range(n_counts):
+        if percent<100 or i%percent==0:
+            print_r("Versus test: {:.0f}/100".format(i/n_counts*100))
+        board = chess.Board()
+        while not board.is_game_over():
+            move=agent_white.select_move(board)
+            board.push(move)
+            if not board.is_game_over():
+                move=agent_black.select_move(board)
+                board.push(move)
+        result = board.result()        
+        if int(result[0]) == 0:
+            black_wins+=1
+        elif int(result[2]) == 0:
+            white_wins+=1
+        else:
+            draws+=1
+    print_r("Versus test: {:.0f}/100".format(100))
+    #white_wins/=n_counts
+    #black_wins/=n_counts
+    #draws/=n_counts
+    return white_wins,black_wins,draws
+
 
 def kaufman_test(agent,details=0,verbose=0):
     acc=0

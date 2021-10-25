@@ -6,7 +6,10 @@ class agent():
         moves=list(board.legal_moves)
 
         if len(moves)>0:
-            score = np.random.permutation(len(moves))/(len(moves)-1)
+            if len(moves)>1:
+                score = np.random.permutation(len(moves))/(len(moves)-1)
+            else:
+                score = np.array([1])
             return moves,score
         else:
             print(f'nodo terminal, resultado: {board.result()}')

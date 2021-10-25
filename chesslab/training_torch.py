@@ -50,8 +50,8 @@ def fitting(start=0,
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    percent_train = len_train_loader//1000
-    percent_test = len_test_loader//1000
+    percent_train = len_train_loader//100
+    percent_test = len_test_loader//100
     date = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(date)
 
@@ -67,7 +67,7 @@ def fitting(start=0,
 
         for i,(x,y) in enumerate(train_loader):
             if percent_train<10 or i%percent_train == 0:
-                print_r('Epoch: {:02}/{:02} | train progress: {:.1f}/100 | train loss: {:.4f} | train acc: {:.4f}'.format(epoch,NUM_EPOCHS-1,(i+1)*100/len_train_loader,loss_sum/(i+1),acc_sum/(i+1)))
+                print_r('Epoch: {:02}/{:02} | train progress: {:.0f}/100 | train loss: {:.4f} | train acc: {:.4f}'.format(epoch,NUM_EPOCHS-1,i/len_train_loader*100,loss_sum/(i+1),acc_sum/(i+1)))
             x=x.to(device)
             y=y.long().to(device)
             
@@ -97,7 +97,7 @@ def fitting(start=0,
                 acc_sum = 0
                 for i,(x,y) in enumerate(test_loader):
                     if percent_test<10 or i%percent_test == 0:
-                        print_r('Epoch: {:02}/{:02} | test progress: {:.1f}/100 | test loss: {:.4f} | test acc: {:.4f}'.format(epoch,NUM_EPOCHS-1,(i+1)*100/len_test_loader,loss_sum/(i+1),acc_sum/(i+1)))
+                        print_r('Epoch: {:02}/{:02} | test progress: {:.0f}/100 | test loss: {:.4f} | test acc: {:.4f}'.format(epoch,NUM_EPOCHS-1,i/len_test_loader*100,loss_sum/(i+1),acc_sum/(i+1)))
                     x=x.to(device)
                     y=y.long().to(device)
                     out = model(x)

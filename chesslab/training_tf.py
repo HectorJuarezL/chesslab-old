@@ -67,8 +67,8 @@ def fitting(start=0,
 
     len_train_loader=len(train_loader)
     len_test_loader=len(test_loader)
-    percent_train = len_train_loader//1000
-    percent_test = len_test_loader//1000
+    percent_train = len_train_loader//100
+    percent_test = len_test_loader//100
 
     start+=1
     NUM_EPOCHS = start+epochs
@@ -83,14 +83,14 @@ def fitting(start=0,
         for i,(batch_x, batch_y) in enumerate(train_loader):
             train_step(model,batch_x,batch_y,optimizer,loss_fn)
             if percent_train<10 or i%percent_train == 0:
-                print_r('Epoch: {:02}/{:02} | train progress: {:.1f}/100 | train loss:{:.4f} | train acc: {:.4f}           '
+                print_r('Epoch: {:02}/{:02} | train progress: {:.0f}/100 | train loss:{:.4f} | train acc: {:.4f}           '
                     .format(epoch,NUM_EPOCHS-1,(i+1)*100/len_train_loader,train_loss.result(),train_accuracy.result()))
         
         if test_loader is not None:
             for i,(batch_x, batch_y) in enumerate(test_loader):
                 test_step(model,batch_x,batch_y,loss_fn)
                 if percent_test<10 or i%percent_test == 0:
-                    print_r('Epoch: {:02}/{:02} | test progress: {:.01}/100 | test loss:{:.4f} | test acc: {:.4f}           '
+                    print_r('Epoch: {:02}/{:02} | test progress: {:.0f}/100 | test loss:{:.4f} | test acc: {:.4f}           '
                         .format(epoch,NUM_EPOCHS-1,(i+1)*100/len_test_loader,test_loss.result(),test_accuracy.result()))
 
 
