@@ -148,11 +148,8 @@ def encode(board,encoding):
             a[:,i,j]=encoding[val]
     return a
 
-def load_model(model,filename,training=False,device=device):
-    if cuda:
-        checkpoint = torch.load(filename)
-    else:
-        checkpoint = torch.load(filename, map_location=device)
+def load_model(model,filename,training=False,device=None):
+    checkpoint = torch.load(filename, map_location=device)
     model.load_state_dict(checkpoint['model_state_dict'])
     encoding=checkpoint['encoding']
     if training:
