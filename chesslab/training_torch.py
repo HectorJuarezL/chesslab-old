@@ -31,7 +31,7 @@ def fitting(start=0,
     
     history = {"train": {"loss": [], "acc": []},"test": {"loss": [], "acc": []}}
     if load_name is not None:
-        model,optimizer,loss_fn,start,encoding,history=load_model(model,load_name,training=True)
+        model,optimizer,loss_fn,start,encoding,history=load_model(model,load_name,training=True,device=device)
     else:
         optimizer=optim(model.parameters(),lr=lr,momentum=mo)
 
@@ -148,8 +148,11 @@ def encode(board,encoding):
             a[:,i,j]=encoding[val]
     return a
 
-def load_model(model,filename,training=False):
-    checkpoint = torch.load(filename)
+def load_model(model,filename,training=False,device=device):
+    if cuda:
+        checkpoint = torch.load(filename)
+    else:
+        checkpoint = torch.load(filename, map_location=device)
     model.load_state_dict(checkpoint['model_state_dict'])
     encoding=checkpoint['encoding']
     if training:

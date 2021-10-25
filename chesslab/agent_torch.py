@@ -9,7 +9,7 @@ class agent():
     def __init__(self,model,path_model,cuda=True):
         self.device = torch.device("cuda" if cuda and torch.cuda.is_available() else "cpu")
         print('device: {}'.format(self.device))
-        self.model,self.encoding,self.history=load_model(model,path_model)
+        self.model,self.encoding,self.history=load_model(model,path_model,device=device)
         self.model.to(self.device)
         self.model.eval()
         self.channels=len(self.encoding['.'])
