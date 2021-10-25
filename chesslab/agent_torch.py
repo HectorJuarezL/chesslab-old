@@ -19,7 +19,7 @@ class agent():
 
         if len(moves)>0:
             with torch.no_grad():
-                t_moves=torch.zeros([len(moves),self.channels,8,8],dtype=torch.float,device=self.device)
+                t_moves=torch.zeros([len(moves),self.channels,8,8],dtype=torch.float32,device=self.device)
                 for i,m in enumerate(moves):
                     board.push(m)
                     t_moves[i,:]=encode(board,self.encoding)

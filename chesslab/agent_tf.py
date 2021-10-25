@@ -7,7 +7,8 @@ from .training_tf import load_model,encode
 class agent():
 
     def __init__(self,model,path_model):
-
+        physical_devices = tf.config.list_physical_devices('GPU')
+        print(physical_devices)
         self.encoding,self.history=load_model(model,path_model)
         self.model=model
         self.channels=len(self.encoding['.'])

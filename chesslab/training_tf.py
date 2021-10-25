@@ -85,6 +85,9 @@ def fitting(start=0,
             if percent_train<10 or i%percent_train == 0:
                 print_r('Epoch: {:02}/{:02} | train progress: {:.0f}/100 | train loss:{:.4f} | train acc: {:.4f}           '
                     .format(epoch,NUM_EPOCHS-1,(i+1)*100/len_train_loader,train_loss.result(),train_accuracy.result()))
+
+        history['train']['acc'].append(train_accuracy.result())
+        history['train']['loss'].append(train_loss.result())
         
         if test_loader is not None:
             for i,(batch_x, batch_y) in enumerate(test_loader):
@@ -92,13 +95,8 @@ def fitting(start=0,
                 if percent_test<10 or i%percent_test == 0:
                     print_r('Epoch: {:02}/{:02} | test progress: {:.0f}/100 | test loss:{:.4f} | test acc: {:.4f}           '
                         .format(epoch,NUM_EPOCHS-1,(i+1)*100/len_test_loader,test_loss.result(),test_accuracy.result()))
-
-
-        #template = 'Epoch {:02d}{}, Tiempo: {:.1f}m Perdida: {:.6f}, Exactitud: {:.2f}, Perdida de prueba: {:.6f}, Exactitud de prueba: {:.2f}'
-        history['train']['acc']=train_accuracy.result()
-        history['train']['loss']=train_loss.result()
-        history['test']['acc']=test_accuracy.result()
-        history['test']['loss']=test_loss.result()
+            history['test']['acc'].append(test_accuracy.result())
+            history['test']['loss'].append(test_loss.result())
 
         elapsed_time = time.time() - start_time
         name="{}.{}.h5".format(save_name,epoch)

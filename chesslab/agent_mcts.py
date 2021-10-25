@@ -167,7 +167,8 @@ class agent_MCTS:
             max_iter=self.max_iter
 
         if (self.root is None) or (str(self.root.game_state)!=str(game_state) and not self.push_board(board=game_state)):
-            #print('\nEl estado de juego no corresponde con el de la raiz del arbol, se recreó la raiz')
+            if self.verbose>0:
+                print('\nEl estado de juego no corresponde con el de la raiz del arbol, se recreó la raiz')
             self.root = MCTSNode(game_state.copy(stack=False),bot=self.bot,is_root=True)
 
         if self.root.is_terminal():
@@ -194,7 +195,7 @@ class agent_MCTS:
             while node is not None:
                 node.record_win(result,self.temperature)
                 node = node.parent
-        if self.verbose>0:
+        if self.verbose>1:
             toc = time.time()-tic
             print('MCTS - rollouts:{} Elapsed time: {:.2f}s = {:.2f}m'.format(self.root.num_rollouts,toc,toc/60))
 

@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from chesslab.agent_torch import agent
+from chesslab.agent_tf import agent
 from chesslab.agent_mcts import agent_MCTS
 import chess
 

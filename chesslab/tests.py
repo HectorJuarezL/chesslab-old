@@ -11,7 +11,7 @@ def versus(agent_white=None,agent_black=None,n_counts=100):
     percent = n_counts//100
     for i in range(n_counts):
         if percent<100 or i%percent==0:
-            print_r("Versus test: {:.0f}/100".format(i/n_counts*100))
+            print_r("Progress:{:.0f}/100 | White wins: {} | Black wins: {} | Draws:{}".format(i/n_counts*100, white_wins,black_wins,draws))
         board = chess.Board()
         while not board.is_game_over():
             move=agent_white.select_move(board)
@@ -26,7 +26,8 @@ def versus(agent_white=None,agent_black=None,n_counts=100):
             white_wins+=1
         else:
             draws+=1
-    print_r("Versus test: {:.0f}/100".format(100))
+    print_r("Progress:{:.0f}/100 | White wins: {} | Black wins: {} | Draws:{}".format(100, white_wins,black_wins,draws))
+        
     #white_wins/=n_counts
     #black_wins/=n_counts
     #draws/=n_counts
