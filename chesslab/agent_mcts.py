@@ -124,11 +124,20 @@ class agent_MCTS:
             self.push_move(move=moves[index])
         return moves[index]
         
-    def push_move(self,move=None,board=None):
-        root=self.root
+    def push_move(self,move=None):
+        for child in self.root.children:
+            if child.move==move:
+                child.is_root=True
+                self.root=child
+                self.root.num_rollouts-=1
+                self.root.parent=None
+                return True
+        return False
+
+    def push_board(self,board=None):
         str_board=str(board)
-        for child in root.children:
-            if child.move==move or str(child.game_state) == str_board:
+        for child in self.root.children:
+            if str(child.game_state) == str_board:
                 child.is_root=True
                 self.root=child
                 self.root.num_rollouts-=1
@@ -157,7 +166,7 @@ class agent_MCTS:
         if max_iter is None:
             max_iter=self.max_iter
 
-        if self.root is None or (str(self.root.game_state)!=str(game_state) and not self.push_move(board=game_state)):
+        if (self.root is None) or (str(self.root.game_state)!=str(game_state) and not self.push_board(board=game_state)):
             #print('\nEl estado de juego no corresponde con el de la raiz del arbol, se recreó la raiz')
             self.root = MCTSNode(game_state.copy(stack=False),bot=self.bot,is_root=True)
 

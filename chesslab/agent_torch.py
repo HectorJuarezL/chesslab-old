@@ -6,8 +6,8 @@ from .training_torch import load_model,encode
 
 class agent():
 
-    def __init__(self,model,path_model):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    def __init__(self,model,path_model,cuda=True):
+        self.device = torch.device("cuda" if cuda and torch.cuda.is_available() else "cpu")
         print('device: {}'.format(self.device))
         self.model,self.encoding,self.history=load_model(model,path_model)
         self.model.to(self.device)
