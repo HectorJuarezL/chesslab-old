@@ -35,7 +35,7 @@ class Model_1(nn.Module):
         return out
 model = Model_1()
 
-bot = agent(model,'models/test_elo.0.3.pt',)
+bot = agent(model,'models/test_elo.0.3.pt')
 app = Flask(__name__)
 
 @app.route('/')
