@@ -62,15 +62,15 @@ def fitting(start=0,
 
     
     train_loader=data_loader( x_data = x_train,y_data=y_train,batch_size=batch_size,shuffle=True ,encoding = encoding,num_workers=num_workers)
-    test_loader = None
+    len_train_loader=len(train_loader)
+    percent_train = len_train_loader//100
+    test = False
     if x_test is not None and y_test is not None:
         test_loader=data_loader( x_data = x_test,y_data=y_test,batch_size=batch_size,shuffle=False , encoding = encoding,num_workers=num_workers )
-
-    len_train_loader=len(train_loader)
-    len_test_loader=len(test_loader)
-    percent_train = len_train_loader//100
-    percent_test = len_test_loader//100
-
+        len_test_loader=len(test_loader)
+        percent_test = len_test_loader//100
+        test=True
+    
     start+=1
     NUM_EPOCHS = start+epochs
 
@@ -90,7 +90,7 @@ def fitting(start=0,
         history['train']['acc'].append(train_accuracy.result())
         history['train']['loss'].append(train_loss.result())
         
-        if test_loader is not None:
+        if test:
             for i,(batch_x, batch_y) in enumerate(test_loader):
                 test_step(model,batch_x,batch_y,loss_fn)
                 if percent_test<10 or i%percent_test == 0:
@@ -107,7 +107,7 @@ def fitting(start=0,
             from google.colab import files
             files.download(name)
 
-        if test_loader is not None:
+        if test:
             print_r('Epoch: {:02}/{:02} | time: {:.0f}s = {:.1f}m | train loss: {:.4f} | train acc: {:.4f} | test loss: {:.4f} | test acc: {:.4f}'
                 .format(epoch,NUM_EPOCHS-1,elapsed_time,elapsed_time/60,train_loss.result(),train_accuracy.result(),test_loss.result(),test_accuracy.result()))
         else:
@@ -117,8 +117,9 @@ def fitting(start=0,
 
         train_loss.reset_states()
         train_accuracy.reset_states()
-        test_loss.reset_states()
-        test_accuracy.reset_states()
+        if test:
+            test_loss.reset_states()
+            test_accuracy.reset_states()
 
 def encode(board,encoding):
     b=str(board).replace(' ','').split('\n')
@@ -142,36 +143,33 @@ def load_model(model,name,training=False):
     else:
         return encoding,history
 
+def recode(x_in,keys,values):
+    to_return=np.zeros([x_in.shape[0],64,len(values[0])],dtype=np.float32)
+    for i,value in enumerate(values):
+        to_change=np.where(x_in==keys[i])
+        to_return[to_change[0],to_change[1],:]=value
+    return np.reshape(to_return,(-1,8,8,len(values[0])))
+
+class Wrapper():
+    def __init__(self,encoding):
+        self.keys = np.array([params.inter_map[i] for i in encoding.keys()],dtype=np.int8)
+        self.values = np.stack([value for value in encoding.values()],0).astype(np.float32)
+    def __call__(self,x_in,y_in):
+        x_in_encoded = tf.numpy_function(
+            recode,
+            inp=(x_in,self.keys,self.values),
+            Tout=(tf.float32)
+        )
+        return x_in_encoded,y_in
+
 
 def data_loader(x_data,y_data,batch_size,shuffle=True,encoding = None, seed=0,num_workers=None):
-    class Wrapper():
-        def __init__(self,encoding):
-            self.keys = np.array([params.inter_map[i] for i in encoding.keys()],dtype=np.int8)
-            self.values = np.stack([value for value in encoding.values()],0).astype(np.float32)
-        def __call__(self,x_in,y_in):
-            x_in_encoded = tf.numpy_function(
-                Wrapper.recode,
-                inp=(x_in,self.keys,self.values),
-                Tout=(tf.float32)
-            )
-            return x_in_encoded,y_in
-            
-        @staticmethod
-        def recode(x_in,keys,values):
-            to_return=np.zeros([x_in.shape[0],64,len(values[0])],dtype=np.float32)
-            for i,value in enumerate(values):
-                to_change=np.where(x_in==keys[i])
-                to_return[to_change[0],to_change[1],:]=value
-            return np.reshape(to_return,(-1,8,8,len(values[0])))
 
+    dataset=tf.data.Dataset.from_tensor_slices((x_data,y_data))
     
-    x_data=tf.data.Dataset.from_tensor_slices(x_data)
-    y_data=tf.data.Dataset.from_tensor_slices(y_data.astype(np.float32))
-    
-    dataset=tf.data.Dataset.zip((x_data,y_data))
-    del x_data
-    del y_data
-    dataset = dataset.shuffle(buffer_size=len(dataset),seed=seed,reshuffle_each_iteration=shuffle)
+    if shuffle:
+        buffer_size=12800
+        dataset = dataset.shuffle(buffer_size=buffer_size,seed=seed,reshuffle_each_iteration=shuffle)
     dataset = dataset.batch(batch_size)
     if encoding is not None:
         wrapper = Wrapper(encoding)
