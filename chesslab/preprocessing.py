@@ -4,6 +4,7 @@ import time
 
 def preprocess(
     block_size=1000000,
+    save_block_size=10000000,
     blocks=0,
     path='',
     start_name='',
@@ -110,30 +111,35 @@ def preprocess(
     if nb_game_filter>0:
         print(f'Selecting {nb_game_filter} game states per game')
         min_games=5
-        max_games=nb_game_filter+min_games-1
+        umbral_games=nb_game_filter+min_games
 
         unique_games=len(np.unique(game))
+
+
 
         print(f'total of different games: {unique_games}')
 
         extracted_games=np.zeros([unique_games*nb_game_filter],dtype=np.int32) #guarda los indices de los juegos a extraer
-        last_game=game[0]
-        index_low=0
+        games_index = np.concatenate(((0,),np.where(np.diff(game)==1)[0]+1,(len(game),)))
+
         cont=0
-        cont_aux=0
-        for i,g in enumerate(game):
-            if g != last_game:
-                if cont>max_games:
-                    #extracted_games[cont_aux:cont_aux+nb_game_filter]=index_low+np.random.permutation((cont-min_games)//2)[:nb_game_filter]*2+min_games #this will get only nb_game_filter values from total per game
-                    extracted_games[cont_aux:cont_aux+nb_game_filter]=index_low+np.arange(nb_game_filter)+min_games+np.random.randint(cont-min_games)
-                    cont_aux+=nb_game_filter
-                else:    
-                    print(f'The game {g} has fewer turns than espected {cont}:{max_games}')
-                last_game=g
-                index_low=i
-                cont=0
-            cont+=1
-        extracted_games[cont_aux:cont_aux+nb_game_filter]=index_low+np.random.permutation((len(game)-index_low-min_games)//2)[:nb_game_filter]*2+min_games
+        for i in range(1,len(games_index)):
+            index_inf = games_index[i-1]
+            index_sup = games_index[i]
+            len_games = index_sup - index_inf
+            
+            flexibility = len_games - umbral_games
+            if flexibility>=0:
+                extracted_tmp = index_inf+np.arange(nb_game_filter)+min_games
+                if flexibility>0:
+                    extracted_tmp += np.random.randint(flexibility)
+                extracted_games[cont:cont+nb_game_filter]=extracted_tmp
+                cont+=nb_game_filter
+            else:
+                extracted_tmp = index_inf+np.arange(len_games-min_games)+min_games
+                extracted_games[cont:cont+len_games-min_games]=extracted_tmp
+                cont+=len_games
+                
 
         if len(np.unique(extracted_games))<len(extracted_games): #this is just to verify that all index numbers are unique
             assert("extracted games error")
@@ -261,9 +267,17 @@ def preprocess(
 
 
     print('saving files')
-    
-    save_pkl(state,f'{path}{data_name}.pkl')
-    save_pkl(result,f'{path}{labels_name}.pkl')
+
+    #blocks = len(result)//save_block_size+1
+    #inf=0
+    #sup=0
+    #for i in range(blocks):
+    #    inf=sup
+    #    sup=sup+save_block_size if i<blocks-1 else len(result)
+    #    save_pkl(state[inf:sup,:],'{}{}.{}.pkl'.format(path,data_name,i))
+    #    save_pkl(result[inf:sup,:],'{}{}.{}.pkl'.format(path,labels_name,i))
+    save_pkl(state,'{}{}.pkl'.format(path,data_name,i))
+    save_pkl(result,'{}{}.pkl'.format(path,labels_name,i))
 
     print('files saved')
     elapsed_time = time.time()-start_time

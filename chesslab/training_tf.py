@@ -47,7 +47,8 @@ def fitting(start=0,
             load_name = None,
             shuffle_train=True,
             shuffle_test=False,
-            download_models=False):
+            download_models=False,
+            num_workers=tf.data.AUTOTUNE):
 
     history={'train':{'acc':[],'loss':[]}, 'test':{'acc':[],'loss':[]} }
 
@@ -60,10 +61,10 @@ def fitting(start=0,
         encoding,history,start = load_model(model,load_name,training=True)
 
     
-    train_loader=data_loader( x_data = x_train,y_data=y_train,batch_size=batch_size,shuffle=True ,encoding = encoding )
+    train_loader=data_loader( x_data = x_train,y_data=y_train,batch_size=batch_size,shuffle=True ,encoding = encoding,num_workers=num_workers)
     test_loader = None
     if x_test is not None and y_test is not None:
-        test_loader=data_loader( x_data = x_test,y_data=y_test,batch_size=batch_size,shuffle=False , encoding = encoding )
+        test_loader=data_loader( x_data = x_test,y_data=y_test,batch_size=batch_size,shuffle=False , encoding = encoding,num_workers=num_workers )
 
     len_train_loader=len(train_loader)
     len_test_loader=len(test_loader)
@@ -114,7 +115,6 @@ def fitting(start=0,
                 .format(epoch,NUM_EPOCHS-1,elapsed_time,elapsed_time/60,train_loss.result(),train_accuracy.result()))
 
 
-
         train_loss.reset_states()
         train_accuracy.reset_states()
         test_loss.reset_states()
@@ -143,7 +143,7 @@ def load_model(model,name,training=False):
         return encoding,history
 
 
-def data_loader(x_data,y_data,batch_size,shuffle=True,encoding = None, seed=0):
+def data_loader(x_data,y_data,batch_size,shuffle=True,encoding = None, seed=0,num_workers=None):
     class Wrapper():
         def __init__(self,encoding):
             self.keys = np.array([params.inter_map[i] for i in encoding.keys()],dtype=np.int8)
@@ -169,10 +169,12 @@ def data_loader(x_data,y_data,batch_size,shuffle=True,encoding = None, seed=0):
     y_data=tf.data.Dataset.from_tensor_slices(y_data.astype(np.float32))
     
     dataset=tf.data.Dataset.zip((x_data,y_data))
+    del x_data
+    del y_data
     dataset = dataset.shuffle(buffer_size=len(dataset),seed=seed,reshuffle_each_iteration=shuffle)
     dataset = dataset.batch(batch_size)
     if encoding is not None:
         wrapper = Wrapper(encoding)
-        dataset=dataset.map(wrapper,num_parallel_calls=tf.data.AUTOTUNE)
+        dataset=dataset.map(wrapper,num_parallel_calls=num_workers)
     return dataset
 
