@@ -1,8 +1,15 @@
 import chess
 import numpy as np
 import tensorflow as tf
-from .training_tf import load_model,encode
+from .training_tf import load_model
 
+def encode(board,encoding):
+    b=str(board).replace(' ','').split('\n')
+    a=np.zeros([8,8,len(encoding['.'])])
+    for i,row in enumerate(b):
+        for j,val in enumerate(row):
+            a[i,j,:]=encoding[val]
+    return a
 
 class agent():
 

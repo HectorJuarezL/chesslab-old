@@ -121,13 +121,7 @@ def fitting(start=0,
             test_loss.reset_states()
             test_accuracy.reset_states()
 
-def encode(board,encoding):
-    b=str(board).replace(' ','').split('\n')
-    a=np.zeros([8,8,len(encoding['.'])])
-    for i,row in enumerate(b):
-        for j,val in enumerate(row):
-            a[i,j,:]=encoding[val]
-    return a
+
 
 def save_model(model,history,encoding,epoch,name):
     save_pkl((model.hw,model.hb,history,encoding,epoch),name)

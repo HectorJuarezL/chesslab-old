@@ -1,8 +1,15 @@
 import chess
 import numpy as np
 import torch
-from .training_torch import load_model,encode
+from .training_torch import load_model
 
+def encode(board,encoding):
+    b=str(board).replace(' ','').split('\n')
+    a=torch.zeros([len(encoding['.']),8,8],dtype=torch.float)
+    for i,row in enumerate(b):
+        for j,val in enumerate(row):
+            a[:,i,j]=encoding[val]
+    return a
 
 class agent():
 
