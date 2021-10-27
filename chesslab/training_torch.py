@@ -140,13 +140,7 @@ def fitting(start=0,
             print_r('Epoch: {:02}/{:02} | time: {:.0f}s = {:.1f}m | train loss: {:.4f} | train acc: {:.4f}'
                 .format(epoch,NUM_EPOCHS-1,elapsed_time,elapsed_time/60,epoch_train_loss,epoch_train_acc))
 
-def encode(board,encoding):
-    b=str(board).replace(' ','').split('\n')
-    a=torch.zeros([len(encoding['.']),8,8],dtype=torch.float)
-    for i,row in enumerate(b):
-        for j,val in enumerate(row):
-            a[:,i,j]=encoding[val]
-    return a
+
 
 def load_model(model,filename,training=False):
     checkpoint = torch.load(filename,map_location='cpu')
