@@ -5,7 +5,7 @@ import numpy as np
 
 class agent():
 
-    def __init__(self,path,depth=0):
+    def __init__(self,path,depth=1):
         self.engine = chess.engine.SimpleEngine.popen_uci(path)
         self.depth=depth
         self.path = path

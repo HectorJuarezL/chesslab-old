@@ -1,6 +1,7 @@
 from .utils import join_and_sort,Print_r
 import numpy as np
 import chess
+import time
 
 
 def versus(agent_white=None,agent_black=None,n_counts=100):
@@ -9,6 +10,7 @@ def versus(agent_white=None,agent_black=None,n_counts=100):
     draws =0
     print_r = Print_r()
     percent = n_counts//100
+    start = time.time()
     for i in range(n_counts):
         if percent<100 or i%percent==0:
             print_r("Progress:{:.0f}/100 | White wins: {} | Black wins: {} | Draws:{}".format(i/n_counts*100, white_wins,black_wins,draws))
@@ -26,7 +28,9 @@ def versus(agent_white=None,agent_black=None,n_counts=100):
             white_wins+=1
         else:
             draws+=1
-    print_r("Progress:{:.0f}/100 | White wins: {} | Black wins: {} | Draws:{}".format(100, white_wins,black_wins,draws))
+    elapsed_time = time.time()-start
+    print_r("Elapsed time: {:.0f}s = {:.1f}m".format(elapsed_time,elapsed_time/60))
+    print("Progress:{:.0f}/100 | White wins: {} | Black wins: {} | Draws:{}".format(100, white_wins,black_wins,draws))
         
     #white_wins/=n_counts
     #black_wins/=n_counts

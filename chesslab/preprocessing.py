@@ -4,7 +4,6 @@ import time
 
 def preprocess(
     block_size=1000000,
-    save_block_size=10000000,
     blocks=0,
     path='',
     start_name='',
@@ -17,7 +16,9 @@ def preprocess(
     delete_duplicate=True,
     delete_draws=True,
     delete_both_winners=True,
-    undersampling = False):
+    undersampling = False,
+    min_games = 5,
+    seed = 0):
 
     if blocks==0:
         print('specify the number of files to preprocess')
@@ -39,8 +40,11 @@ def preprocess(
     else:
         result=np.zeros([blocks*block_size,3],np.int8)
 
+    draws_deleted=0
+    elo_deleted=0
     index_inf=0
     index_sup=0
+    np.random.seed(seed)
     for i in range(1,blocks+1):
         print(f'file: {i}')
         temp_elo = load_pkl(f'{path}{start_name}_elo.{i}.pkl')
@@ -51,6 +55,7 @@ def preprocess(
         if delete_draws:
 
             index_filter=np.where(temp_result[:,2]>0)
+            draws_deleted+=len(index_filter[0])
             temp_elo=np.delete(temp_elo,index_filter,0)
             temp_result=np.delete(temp_result,index_filter,0)
             temp_result=temp_result[:,:2]
@@ -66,6 +71,7 @@ def preprocess(
                 b=np.min(temp_elo,1)
 
             index_filter=np.where(b>=min_elo)[0]
+            elo_deleted+=len(temp_game)-len(index_filter)
        
             temp_state=temp_state[index_filter,:]
             temp_result=temp_result[index_filter,:]
@@ -81,6 +87,16 @@ def preprocess(
     state=state[:index_sup,:]
     result=result[:index_sup,:]
     game=game[:index_sup]
+
+    len_state=len(state)
+
+    if delete_draws:
+        print('Total of positions deleted by draw: {}'.format(draws_deleted))
+    if elo_filter>0:
+        print('Total of positions deleted by elo filter: {}'.format(elo_deleted))
+
+    print(f'total of positions: {len_state}')
+
 
     print('='*80)
 
@@ -101,16 +117,14 @@ def preprocess(
         len_state=len(state)
         len_result=len(result)
         len_game=len(game)
-        print(f'total of different states: {len_state}')
-        print(f'total of different result: {len_result}')
-        print(f'total of games: {len_game}')
+        print(f'total of positions: {len_state}')
         print('='*80)
 
 
     #a continuación, se selecciona un número determinado de estados por juego
     if nb_game_filter>0:
         print(f'Selecting {nb_game_filter} game states per game')
-        min_games=5
+        #min_games=5
         umbral_games=nb_game_filter+min_games
 
         unique_games=len(np.unique(game))
@@ -149,9 +163,7 @@ def preprocess(
         game=game[extracted_games] #This variable is not longer needed
 
         len_state=len(state)
-        len_result=len(result)
-        print(f'total of different states: {len_state}')
-        print(f'total of different results: {len_result}')
+        print(f'total of positions: {len_state}')
         print('='*80)
 
 
@@ -185,40 +197,37 @@ def preprocess(
         del new_state
 
         len_state=len(state)
-        len_result=len(result)
         
-        print(f'total of different states: {len_state}')
-        print(f'total of different results: {len_result}')
+        print(f'total of positions: {len_state}')
         print('='*80)
 
-    if delete_both_winners:
+        if delete_both_winners:
 
-        #de los estados restantes, se eliminan aquellos que no tengan un claro ganador
-        
-
-        b=np.sum(result,axis=1)
-        b=result/b[:,None]
-        dif=np.abs(b[:,0]-b[:,1])
-        a=np.where(dif<1)
-
-        len(a[0])
-
-        result=np.delete(b,a,0)
-        result.shape
-
-        np.max(result)
-
-        result=result.astype(np.int) #now, the max value can be stored using 8-bits
-
-
-        state=np.delete(state,a,0)
+            #de los estados restantes, se eliminan aquellos que no tengan un claro ganador
             
-        len_state=len(state)
-        len_result=len(result)
-        print('deleting games with both winners')
-        print(f'total of different states: {len_state}')
-        print(f'total of different results: {len_result}')
-        print('='*80)
+
+            b=np.sum(result,axis=1)
+            b=result/b[:,None]
+            dif=np.abs(b[:,0]-b[:,1])
+            a=np.where(dif<1)
+
+            len(a[0])
+
+            result=np.delete(b,a,0)
+            result.shape
+
+            np.max(result)
+
+            result=result.astype(np.int) #now, the max value can be stored using 8-bits
+
+
+            state=np.delete(state,a,0)
+                
+            len_state=len(state)
+            print('deleting games with both winners')
+            print(f'total of positions: {len_state}')
+            print('='*80)
+            
     if undersampling:
         print('undersampling data')
         white_index=np.where(result[:,0]==1)
@@ -244,10 +253,8 @@ def preprocess(
         del black_states
 
         len_state=len(state)
-        len_result=len(result)
         
-        print(f'total of different states: {len_state}')
-        print(f'total of different results: {len_result}')
+        print(f'total of positions: {len_state}')
         print('='*80)
 
 
@@ -268,14 +275,7 @@ def preprocess(
 
     print('saving files')
 
-    #blocks = len(result)//save_block_size+1
-    #inf=0
-    #sup=0
-    #for i in range(blocks):
-    #    inf=sup
-    #    sup=sup+save_block_size if i<blocks-1 else len(result)
-    #    save_pkl(state[inf:sup,:],'{}{}.{}.pkl'.format(path,data_name,i))
-    #    save_pkl(result[inf:sup,:],'{}{}.{}.pkl'.format(path,labels_name,i))
+
     save_pkl(state,'{}{}.pkl'.format(path,data_name,i))
     save_pkl(result,'{}{}.pkl'.format(path,labels_name,i))
 
