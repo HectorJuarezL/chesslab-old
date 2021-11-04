@@ -42,6 +42,18 @@ class agent():
             print(f'nodo terminal, resultado: {board.result()}')
             return None
 
+    def get_move_values_single(self,board):
+        
+        with torch.no_grad():
+            t_moves=torch.zeros([1,self.channels,8,8],dtype=torch.float32,device=self.device)
+            t_moves[0,:]=encode(board,self.encoding)
+            score=self.model(t_moves).cpu()
+            score=torch.softmax(score,1)
+            score=score.detach().numpy()
+            score = np.squeeze(score,0)
+            return score
+    
+
 
     def select_move(self,board):
         moves,values=self.get_move_values(board)

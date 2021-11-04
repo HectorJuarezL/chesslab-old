@@ -90,12 +90,16 @@ def preprocess(
 
     len_state=len(state)
 
-    if delete_draws:
-        print('Total of positions deleted by draw: {}'.format(draws_deleted))
-    if elo_filter>0:
-        print('Total of positions deleted by elo filter: {}'.format(elo_deleted))
+    total_positions = len_state+draws_deleted+elo_deleted
 
-    print(f'total of positions: {len_state}')
+    print(f'total of positions: {total_positions}')
+
+    if delete_draws:
+        print('Total of positions after draw filter: {}'.format(total_positions - draws_deleted))
+    if elo_filter>0:
+        print('Total of positions after elo filter: {}'.format(total_positions - draws_deleted - elo_deleted))
+
+    
 
 
     print('='*80)

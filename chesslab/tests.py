@@ -29,9 +29,9 @@ def versus(agent_white=None,agent_black=None,n_counts=100):
         else:
             draws+=1
     elapsed_time = time.time()-start
-    print_r("Elapsed time: {:.0f}s = {:.1f}m".format(elapsed_time,elapsed_time/60))
-    print("Progress:{:.0f}/100 | White wins: {} | Black wins: {} | Draws:{}".format(100, white_wins,black_wins,draws))
-        
+    print_r("Progress:{:.0f}/100 | White wins: {} | Black wins: {} | Draws:{}".format(100, white_wins,black_wins,draws)) 
+    print("Elapsed time: {:.0f}s = {:.1f}m".format(elapsed_time,elapsed_time/60))
+       
     #white_wins/=n_counts
     #black_wins/=n_counts
     #draws/=n_counts

@@ -39,6 +39,16 @@ class agent():
             print(f'nodo terminal, resultado: {board.result()}')
             return None
 
+    def get_move_values_single(self,board):
+        t_moves=np.zeros([1,8,8,self.channels],dtype=np.float32)
+        t_moves[0,:]=encode(board,self.encoding)
+        score=self.model(t_moves)
+        score=tf.nn.softmax(score,1)
+        score=score.numpy()
+        score = np.squeeze(score,0)
+        return score
+    
+
 
     def select_move(self,board):
         moves,values=self.get_move_values(board)
