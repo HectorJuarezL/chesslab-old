@@ -37,7 +37,7 @@ class Model_1(nn.Module):
 model = Model_1()
 
 deepbot = agent(model,'models/test_elo.0.3.pt',cuda=False)
-deepMCTS = agent_MCTS(temperature=2,bot=deepbot,max_iter=1000)
+deepMCTS = agent_MCTS(temperature=2,bot=deepbot,max_iter=1000,verbose = 2)
 app = Flask(__name__)
 
 @app.route('/')
@@ -51,7 +51,7 @@ def get_move(depth, fen):
     print("Calculating...")
     game_state=chess.Board(fen)
     if not game_state.is_game_over():
-        move = str(deepMCTS.select_move(game_state))
+        move = str(deepMCTS.select_move(game_state,thinking_time=depth))
         print("Move found!", move)
         print()
         return move

@@ -41,7 +41,7 @@ class MCTS_graph:
 
 
 class MCTSNode:
-    def __init__(self, game_state, parent = None, move = None, value = [0,0], bot = None, is_root = False):
+    def __init__(self, game_state, parent = None, move = None, bot = None, is_root = False):
         self.game_state = game_state
         self.parent = parent
         self.move = move
@@ -50,38 +50,33 @@ class MCTSNode:
         self.num_rollouts = 0
         self.children = []
         self.unvisited_moves = []
-        self.unvisited_values = []
         self.is_root=is_root
         if self.is_terminal():
             tmp = game_state.result()
             if int(tmp[0]) == 0:
-                self.value = [0,1]
+                self.value = np.array([0,1])
             elif int(tmp[2]) == 0:
-                self.value = [1,0]
+                self.value = np.array([1,0])
             else:
-                self.value = [1/2,1/2]
+                self.value = np.array([1/2,1/2])
         else:
+            self.unvisited_moves = list(game_state.legal_moves)
+            value = bot.get_move_values_single(game_state)
             self.value+=value
-            self.unvisited_moves,self.unvisited_values = bot.get_move_values(game_state,both_players=True)
-            self.unvisited_values = self.unvisited_values.tolist()
         
 
     def add_random_child(self,bot):
         index = np.random.randint(len(self.unvisited_moves))
         new_move = self.unvisited_moves.pop(index) #selecciona un movimiento disponible al azar y lo elimina de los movimientos no visitados
-        new_value = self.unvisited_values.pop(index)
         new_game_state = self.game_state.copy(stack=False) #crea una copia del estado de juego
         new_game_state.push(new_move) #realiza el movimiento seleccionado
-        new_node = MCTSNode(game_state=new_game_state, parent=self, move=new_move,value=new_value,bot=bot) #crea un nuevo nodo
+        new_node = MCTSNode(game_state=new_game_state, parent=self, move=new_move, bot=bot) #crea un nuevo nodo
         self.children.append(new_node) #añade el nodo a su lista de hijos
         return new_node #retorna el nuevo nodo
 
-    def record_win(self, result, temperature=2):
+    def record_win(self, result):
         self.win_counts += result
         self.num_rollouts += 1
-        if not self.is_root:
-            log_rollouts = np.log(self.parent.num_rollouts+1)#se le suma 1 porque aun no se ha actualizado el valor del padre
-            self.update_uct(log_rollouts,temperature)
 
 
     def result_simulation(self):
@@ -99,12 +94,6 @@ class MCTSNode:
         else: #turno de las negras
             return float(self.win_counts[1]) / float(self.num_rollouts)
 
-    def update_uct(self,log_rollouts,temperature=2):
-        #log_rollouts = np.log(self.parent.num_rollouts)
-        win_percentage = self.winning_frac()
-        exploration_factor = np.sqrt(log_rollouts / self.num_rollouts)
-        self.uct_score = win_percentage + temperature * exploration_factor
-
 class agent_MCTS:
     def __init__(self, temperature=2,bot=None,game_state=None,max_iter=100,verbose=0):
         self.temperature = temperature
@@ -115,8 +104,8 @@ class agent_MCTS:
         if game_state is not None:
             self.root = MCTSNode(game_state.copy(),bot=self.bot,is_root=True)
 
-    def select_move(self,board,max_iter=None,push=True):
-        moves,values=self.get_move_values(board,max_iter=max_iter)
+    def select_move(self,board,max_iter=None,push=True, thinking_time = 0):
+        moves,values=self.get_move_values(board,max_iter=max_iter, thinking_time = thinking_time)
         if moves is None:
             return None
         index=np.argmax(values)
@@ -149,26 +138,27 @@ class agent_MCTS:
         self.max_iter=max_iter
 
     def select_child(self, node):
-        #best_score = -1
-        #best_child = None
-        uct_score = np.array([child.uct_score for child in node.children])
-        best_child = np.argmax(uct_score)
-        return node.children[best_child]
-        #for child in node.children:
-        #    uct_score = child.uct_score
-        #    if uct_score > best_score:
-        #        best_score = uct_score
-        #        best_child = child
+        best_score = -1
+        best_child = None
+        log_rollouts = np.log(node.num_rollouts)
+        for child in node.children:
+            win_percentage = child.winning_frac()
+            exploration_factor = np.sqrt(log_rollouts / child.num_rollouts)
+            uct_score = win_percentage + self.temperature * exploration_factor
+            if uct_score > best_score:
+                best_score = uct_score
+                best_child = child
+        return best_child
         
 
-    def get_move_values(self,game_state,max_iter=None):
+    def get_move_values(self,game_state,max_iter=None, thinking_time = 0):
         
         if max_iter is None:
             max_iter=self.max_iter
 
         if (self.root is None) or (str(self.root.game_state)!=str(game_state) and not self.push_board(board=game_state)):
             if self.verbose>0:
-                print('\nEl estado de juego no corresponde con el de la raiz del arbol, se recreó la raiz')
+                print('El estado de juego no corresponde con el de la raiz del arbol, se recreó la raiz')
             self.root = MCTSNode(game_state.copy(stack=False),bot=self.bot,is_root=True)
 
         if self.root.is_terminal():
@@ -176,8 +166,10 @@ class agent_MCTS:
         i=0
 
         tic = time.time()
-        while i<max_iter:
-            #print(i,end=" ")
+        while thinking_time>0 or i<max_iter:
+            toc = time.time()-tic
+            if toc> thinking_time:
+                thinking_time=0
             i+=1
             node = self.root
             #fase de seleccion, donde busca un nodo que no sea un nodo derminal
@@ -193,11 +185,11 @@ class agent_MCTS:
 
             #fase de retropropagación, donde se actualiza el valor de Q de los nodos padres hasta llegar al nodo raiz
             while node is not None:
-                node.record_win(result,self.temperature)
+                node.record_win(result)
                 node = node.parent
         if self.verbose>1:
             toc = time.time()-tic
-            print('MCTS - rollouts:{} Elapsed time: {:.2f}s = {:.2f}m'.format(self.root.num_rollouts,toc,toc/60))
+            print('MCTS - nodes:{} Elapsed time: {:.2f}s = {:.2f}m nps={:.0f}'.format(self.root.num_rollouts,toc,toc/60,self.root.num_rollouts/toc))
 
         
         score = []
