@@ -104,25 +104,7 @@ def preprocess(
 
     print('='*80)
 
-    if delete_eaten:
-        #en este bloque se eliminan aquellos estados que su estado siguiente sea comer una pieza, esto es porque muchos de estos estados conllevan el comer una pieza posterior
-        print('Deleting states where there are eaten pieces')
-        c=np.count_nonzero(state,1)
-        print(c.shape)
-        d=np.diff(c)
-        print(d.shape)
-        e=np.where(d==-1)
-        print(e[0].shape)
-
-        state=np.delete(state,e,0)
-        result=np.delete(result,e,0)
-        game=np.delete(game,e,0)
-
-        len_state=len(state)
-        len_result=len(result)
-        len_game=len(game)
-        print(f'total of positions: {len_state}')
-        print('='*80)
+    
 
 
     #a continuación, se selecciona un número determinado de estados por juego
@@ -164,9 +146,26 @@ def preprocess(
 
         state=state[extracted_games,:]
         result=result[extracted_games,:]
-        game=game[extracted_games] #This variable is not longer needed
 
         len_state=len(state)
+        print(f'total of positions: {len_state}')
+        print('='*80)
+
+    if delete_eaten:
+        #en este bloque se eliminan aquellos estados que su estado siguiente sea comer una pieza, esto es porque muchos de estos estados conllevan el comer una pieza posterior
+        print('Deleting states where there are eaten pieces')
+        c=np.count_nonzero(state,1)
+        print(c.shape)
+        d=np.diff(c)
+        print(d.shape)
+        e=np.where(d==-1)
+        print(e[0].shape)
+
+        state=np.delete(state,e,0)
+        result=np.delete(result,e,0)
+
+        len_state=len(state)
+        len_result=len(result)
         print(f'total of positions: {len_state}')
         print('='*80)
 
