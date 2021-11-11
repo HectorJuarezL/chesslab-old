@@ -141,6 +141,23 @@ def fitting(start=0,
                 .format(epoch,NUM_EPOCHS-1,elapsed_time,elapsed_time/60,epoch_train_loss,epoch_train_acc))
 
 
+"""
+This python script converts the network into Script Module
+"""
+
+def save_script(model,filename):
+
+    # Set upgrading the gradients to False
+    for param in model.parameters():
+        param.requires_grad = False
+
+    # Save the model except the final FC Layer
+    #resnet18 = torch.nn.Sequential(*list(model.children()))
+
+    example_input = torch.rand(1, 3, 8, 8)
+    script_module = torch.jit.trace(model, example_input)
+    script_module.save(filename)
+
 
 def load_model(model,filename,training=False):
     checkpoint = torch.load(filename,map_location='cpu')

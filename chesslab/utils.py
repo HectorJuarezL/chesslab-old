@@ -43,11 +43,6 @@ class Print_r:
             print('{}           \r'.format(text))
 
 
-#def print_r(text="",new=False):
-#    if is_notebook:
-#    else:
-#        print('{}           \r'.format(text))
-#        #sys.stdout.write('{}           \r'.format(text))
 
 
 def load_pkl(filename):

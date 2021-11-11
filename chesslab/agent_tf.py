@@ -13,12 +13,39 @@ def encode(board,encoding):
 
 class agent():
 
-    def __init__(self,model,path_model):
+    def __init__(self,model,path_model,cuda=True):
         physical_devices = tf.config.list_physical_devices('GPU')
-        print(physical_devices)
+        self.device = "/device:GPU:0" if cuda and len(physical_devices)>0 else "/cpu:0"
+        print(self.device)
         self.encoding,self.history=load_model(model,path_model)
         self.model=model
         self.channels=len(self.encoding['.'])
+
+    def get_moves_encoded_depth_1(self,board):
+        moves=list(board.legal_moves)
+        t_moves=np.zeros([len(moves),8,8,self.channels],dtype=np.float32)
+        for i,m in enumerate(moves):
+            board.push(m)
+            t_moves[i,:]=encode(board,self.encoding)
+            board.pop()
+        return t_moves
+
+    def get_moves_encoded_depth_2(self,board,parent_index):
+        moves_1=list(board.legal_moves)
+        moves_2=[]
+        t_moves_1=np.zeros([len(moves),8,8,self.channels],dtype=np.float32)
+        t_moves_2=np.zeros([0,8,8,self.channels],dtype=np.float32)
+        parent_moves = np.zeros([0,],dtype=np.int32)
+        for i,m in enumerate(moves):
+            board.push(m)
+            t_moves_1[i,:]=encode(board,self.encoding)
+            moves,encoded = self.get_moves_encoded_depth_1(board)
+            moves_2.extend(moves)
+            t_moves_2 = np.concatenate((t_moves_2,encoded))
+            parent_moves = np.concatenate((parent_moves,i+parent_index))
+            board.pop()
+        return moves_2,t_moves_2
+
         
     def get_move_values(self,board,both_players = False):
         moves=list(board.legal_moves)
@@ -29,7 +56,8 @@ class agent():
                 board.push(m)
                 t_moves[i,:]=encode(board,self.encoding)
                 board.pop()
-            score=self.model(t_moves)
+            with tf.device(self.device):
+                score=self.model(t_moves)
             score=tf.nn.softmax(score,1)
             score=score.numpy()
             if not both_players:

@@ -23,6 +23,8 @@ __pycache__/
 *.dot
 
 examples/backups/*
+examples/tmp/*
+examples/sunfish.py
 
 # Distribution / packaging
 .Python

@@ -6,7 +6,7 @@ import tensorflow as tf
 from .utils import load_pkl,save_pkl,params,Print_r
 
 
-train_loss = tf.keras.metrics.Mean(name='train_loss')
+train_loss = tf.keras.metrics.Mean(name='train loss')
 train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
 
 test_loss = tf.keras.metrics.Mean(name='test_loss')
@@ -48,7 +48,7 @@ def fitting(start=0,
             shuffle_train=True,
             shuffle_test=False,
             download_models=False,
-            num_workers=tf.data.AUTOTUNE):
+            num_workers=0): #tf.data.AUTOTUNE
 
     history={'train':{'acc':[],'loss':[]}, 'test':{'acc':[],'loss':[]} }
 
