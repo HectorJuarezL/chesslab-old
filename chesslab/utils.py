@@ -199,15 +199,15 @@ def encode(board,inter_map=None):
     return np.array([inter_map[i] for i in list(b)],dtype=np.int8)
 
 
-def explore(board, depth):
+def perft(board, depth):
     if depth == 0:
-        return [board]
-    
-    moves = list(b.legal_moves)
-    boards = []
+        return 1
+    n = 0
+    moves = list(board.legal_moves)
     for m in moves:
-        b=board.copy().push(m)
-        boards.extend(explore(b,depth-1))
-    return boards
+        board.push(m)
+        n+=perft(board,depth-1);
+        board.pop()
+    return n
         
 
